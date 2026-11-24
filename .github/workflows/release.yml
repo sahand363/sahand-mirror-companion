@@ -1,0 +1,52 @@
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
+
+      - name: Vet and test
+        run: |
+          go vet ./...
+          go test ./...
+
+      - name: Build linux amd64 / arm64 / armv7
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          mkdir -p dist
+          for target in amd64 arm64 armv7; do
+            goarch="$target"; goarm=""
+            if [ "$target" = armv7 ]; then goarch=arm; goarm=7; fi
+            rm -rf build && mkdir build
+            CGO_ENABLED=0 GOOS=linux GOARCH="$goarch" GOARM="$goarm" \
+              go build -trimpath -ldflags "-s -w -X main.version=${TAG}" -o build/sahand-mirror-companion .
+            cp install.sh README.md build/
+            name="sahand-mirror-companion-linux-${target}.tar.gz"
+            tar -C build -czf "dist/${name}" sahand-mirror-companion install.sh README.md
+            (cd dist && sha256sum "${name}" > "${name}.sha256")
+          done
+          cp install.sh dist/install.sh
+          (cd dist && sha256sum install.sh > install.sh.sha256)
+          ls -la dist
+
+      - name: Publish GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          gh release create "$TAG" dist/* --title "sahand-mirror-companion $TAG" --generate-notes \
+            || gh release upload "$TAG" dist/* --clobber

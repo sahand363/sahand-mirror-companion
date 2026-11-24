@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-var version = "v0.1.3"
+var version = "v0.1.2"
 
 const (
 	binPath  = "/usr/local/bin/sahand-mirror-companion"

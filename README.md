@@ -63,6 +63,26 @@ bash <(curl -Ls https://raw.githubusercontent.com/sahand363/sahand-mirror-compan
 - ترافیک کانتینرهای داکر از زنجیرهٔ FORWARD می‌گذرد و شامل شبیه‌ساز نیست.
 - نیازمند `iptables` است (`apt install iptables`).
 
+## تست قطعی با `offline-sim.sh`
+
+این اسکریپت روی **سرور مقصد** (نه هاب) همهٔ ترافیک خروجی را می‌بندد، جز خود سرور، جلسهٔ SSH فعلی و هاب؛ و بعد از چند دقیقه خودش همه‌چیز را برمی‌گرداند، حتی اگر SSH قطع شود. با root اجرا کنید:
+
+```bash
+curl -Lso offline-sim.sh https://raw.githubusercontent.com/sahand363/sahand-mirror-companion/main/offline-sim.sh
+bash offline-sim.sh 20                 # ۲۰ دقیقه آفلاین (پیش‌فرض ۲۰، کمترین ۱)
+ALLOW_DNS=1 bash offline-sim.sh 30     # DNS باز بماند، شبیه‌تر به قطعی واقعی
+HUB=1.2.3.4 bash offline-sim.sh        # هاب دیگر
+bash offline-sim.sh off                # پایان فوری و وصل شدن دوباره به اینترنت
+```
+
+بررسی: `curl -m5 -sI https://github.com` باید خطا بدهد و `curl -m5 -s http://HUB:PORT/myip` باید IP سرور را بدهد.
+
+- اگر اسکریپت را دانلود نکرده‌اید و سرور قطع مانده، این یک خط هم همان کار `off` را می‌کند:
+  `for T in iptables ip6tables; do while $T -D OUTPUT -j OFFSIM 2>/dev/null; do :; done; $T -F OFFSIM; $T -X OFFSIM; done`
+- عدد ۰ پذیرفته نمی‌شود (برگشت خودکار ساخته نمی‌شد و سرور قطع می‌ماند)؛ کمترین مقدار ۱ دقیقه است.
+- REJECT خطای فوری می‌دهد؛ در قطعی واقعی معمولاً بسته‌ها DROP می‌شوند و نصب کندتر است.
+- اگر سرور تست خارج از ایران و هاب داخل ایران است، دانلودها از مسیر بین‌الملل می‌آیند و کندند؛ روز قطعی روی شبکهٔ ملی سریع است.
+
 ## مسیرها
 
 - باینری: `/usr/local/bin/sahand-mirror-companion` (و لینک `smc`)

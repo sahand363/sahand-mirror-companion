@@ -230,7 +230,7 @@ func printTests(rs []TestResult) {
 		detail := fmt.Sprintf("%d ms", r.MS)
 		if !r.OK {
 			mark = cRed + "✘" + cReset
-			detail = cRed + r.Error + cReset
+			detail = cRed + asciiOnly(r.Error, "unreachable") + cReset
 		}
 		name := r.Name
 		if r.IsHub {
@@ -277,4 +277,14 @@ func doUninstall(yes bool) {
 	os.Remove(linkPath)
 	os.Remove(binPath)
 	fmt.Println(cGreen + "  sahand-mirror-companion removed (simulator rules cleared)." + cReset)
+}
+
+// asciiOnly keeps SSH output ASCII: many terminals break on Persian text.
+func asciiOnly(s, fallback string) string {
+	for _, r := range s {
+		if r > 127 {
+			return fallback
+		}
+	}
+	return s
 }

@@ -158,14 +158,14 @@ function renderCatalog(fresh) {
     const r = a.ready || {};
     const ready = a.analyzed ? `<span class="pill ok">آماده ${fa(r.handled)}</span><span class="pill warn">اقدام ${fa(r.action)}</span><span class="pill bad">ناممکن ${fa(r.offline)}</span>` : '<span class="pill">تحلیل نشده</span>';
     const ver = a.latest ? `<span dir="ltr">${esc(a.latest)}</span>${a.prev ? ` <span class="muted" dir="ltr">(قبلاً ${esc(a.prev)})</span>` : ''}` : 'بدون ریلیز';
+    const acts = a.change === 'removed' ? '' : `<div class="row acts"><button class="sm ghost" data-readme="${esc(a.id)}" ${a.readme ? '' : 'disabled title="README آینه نشده"'}>📖 README</button>
+      <button class="sm" data-install="${esc(a.id)}">نصب روی همین سرور</button></div>`;
     return `<div class="app ${a.change === 'removed' ? 'removed' : ''}">
-      <h3>${esc(a.name)}${badge}</h3>
-      <div class="meta">${a.repo ? `<span dir="ltr">${esc(a.repo)}</span> · ` : ''}نسخه ${ver} · ${fa(a.assets)} فایل (<span dir="ltr">${size(a.size)}</span>)</div>
-      <div class="pills" title="آمادگی آفلاین">${ready}</div>
+      <div class="ahead"><div class="ainfo"><h3>${esc(a.name)}${badge}</h3>
+      <div class="meta">${a.repo ? `<span dir="ltr">${esc(a.repo)}</span> · ` : ''}نسخه ${ver} · ${fa(a.assets)} فایل (<span dir="ltr">${size(a.size)}</span>)</div></div>
+      <div class="pills" title="آمادگی آفلاین">${ready}</div>${acts}</div>
       ${a.error ? `<div class="err ltr">${esc(a.error)}</div>` : ''}
-      ${a.change === 'removed' ? '' : `<div class="cmd"><code>${esc(a.install)}</code><button data-copy="${esc(a.install)}">کپی</button></div>
-      <div class="row"><button class="sm ghost" data-readme="${esc(a.id)}" ${a.readme ? '' : 'disabled title="README آینه نشده"'}>📖 README</button>
-      <button class="sm" data-install="${esc(a.id)}">نصب روی همین سرور</button></div>`}
+      ${a.change === 'removed' ? '' : `<div class="cmd"><code>${esc(a.install)}</code><button data-copy="${esc(a.install)}">کپی</button></div>`}
     </div>`;
   }).join('') || '<p class="muted">هاب هنوز برنامه‌ای ندارد.</p>';
   main.querySelectorAll('[data-readme]').forEach(b => b.onclick = () => showReadme(b.dataset.readme));

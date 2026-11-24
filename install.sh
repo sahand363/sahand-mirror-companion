@@ -16,6 +16,7 @@ KEY="${SMC_KEY:-${__SM_KEY:-}}"
 PORT="${SMC_PORT:-}"
 VERSION="${SMC_VERSION:-}"
 
+tty_ok() { [ -e /dev/tty ] && { : </dev/tty; } 2>/dev/null; }
 red() { echo -e "\033[31m$*\033[0m"; }
 green() { echo -e "\033[32m$*\033[0m"; }
 die() { red "error: $*"; exit 1; }
@@ -57,11 +58,11 @@ tar -xzf "$TMP/smc.tar.gz" -C "$TMP" sahand-mirror-companion
 FRESH=0
 [ -f "$CONF" ] || FRESH=1
 if [ "$FRESH" = 1 ] && [ -z "$HUB" ]; then
-  [ -e /dev/tty ] && read -r -p "sahand-mirror hub address (e.g. http://10.0.0.5:8686): " HUB </dev/tty || true
+  tty_ok && read -r -p "sahand-mirror hub address (e.g. http://10.0.0.5:8686): " HUB </dev/tty || true
   [ -n "$HUB" ] || die "hub address is required (--hub http://IP:PORT)"
 fi
 if [ "$FRESH" = 1 ] && [ -z "$PORT" ]; then
-  if [ -e /dev/tty ] && [ -z "${SMC_NO_MENU:-}" ]; then read -r -p "panel port [8687]: " PORT </dev/tty || true; fi
+  if tty_ok && [ -z "${SMC_NO_MENU:-}" ]; then read -r -p "panel port [8687]: " PORT </dev/tty || true; fi
 fi
 PORT="${PORT:-0}"
 [[ "$PORT" =~ ^[0-9]+$ ]] && [ "$PORT" -le 65535 ] || die "invalid port $PORT"
@@ -108,6 +109,6 @@ if echo "$INIT_OUT" | grep -q 'ui password'; then
   echo "(save it now; change it any time from the menu: smc)"
 fi
 echo
-if [ -z "${SMC_NO_MENU:-}" ] && [ -t 1 ] && [ -e /dev/tty ]; then
+if [ -z "${SMC_NO_MENU:-}" ] && [ -t 1 ] && tty_ok; then
   exec "$BIN" menu </dev/tty
 fi
